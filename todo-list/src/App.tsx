@@ -1,55 +1,81 @@
 import { useState } from "react";
+import { useReducer } from "react";
 //import reactLogo from './assets/react.svg'
 //import viteLogo from '/vite.svg'
 import { Profile } from "./Profile.tsx";
 import "./App.css";
 
+interface Entry {
+  id: number;
+  title: string;
+  editing: boolean;
+}
+interface State {
+  entries: Entry[];
+}
+
+enum ActionKind {
+  REMOVE = "REMOVE",
+  ADD = "add",
+  EDITING = "editing",
+  EDITED = "edited",
+}
+interface Action {
+  type: ActionKind;
+  payload: Entry;
+}
+function entryReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case ActionKind.ADD:
+      return { ...state, entries: [...state.entries, action.payload] };
+    case ActionKind.EDITING:
+      return {
+        ...state,
+        entries: state.entries.map((entry: Entry) => {
+          if (entry.id === action.payload.id) {
+            entry.editing = true;
+          }
+          return {...entry}
+        }),
+      };
+    case ActionKind.REMOVE:
+      return {
+        ...state,
+        entries: state.entries.filter(
+          (entry) => entry.id !== action.payload.id
+        ),
+      };
+    case ActionKind.EDITED:
+      return {
+        ...state,
+        entries: state.entries.map((entry) => {
+          if (entry.id === action.payload.id) {
+            entry = action.payload;
+            entry.editing = false;
+          }
+          return {...entry}
+        }),
+      };
+    default: {
+      throw Error("Unknown action: " + action.type);
+    }
+  }
+}
+
 function App() {
   const [lastIndex, setLastIndex] = useState<number>(0);
-  const [entries, setEntries] = useState<Entry[]>([]);
-  const [doneEntries, setDoneEntries] = useState<Entry[]>([]);
+  const [state, dispatch] = useReducer(entryReducer, { entries: [] });
+  const [doneState, update] = useReducer(entryReducer, { entries: [] });
 
-  interface Entry {
-    id: number;
-    title: string;
-    editing: boolean;
-  }
-  function handleSaveEditButtonClick(id: number) {
-    const newValue = (document.getElementById("text" + id) as HTMLInputElement)
-      .value;
-    const newEntries = entries.map((entry) => {
-      if (entry.id === id) {
-        entry.title = newValue;
-        entry.editing = false;
-      }
-      return entry;
+  function handleAddTaskClick() {
+    const input = (document.getElementById("text") as HTMLInputElement).value;
+    dispatch({
+      type: ActionKind.ADD,
+      payload: { id: lastIndex, title: input, editing: false },
     });
-    setEntries(newEntries);
+    setLastIndex((n) => n + 1);
   }
-  function handleEditButtonClick(id: number) {
-    //const entry = entries.find((entry) => entry.id === id);
-    const newEntries: Entry[] = entries.map((entry) => {
-      if (entry.id === id) entry.editing = !entry.editing;
-      return entry;
-    });
-    setEntries(newEntries);
-  }
-  function handleAddEntryClick(index: number) {
-    const text = (document.getElementById("text") as HTMLInputElement).value;
-    (document.getElementById("text") as HTMLInputElement).value = "";
 
-    const newEntries: Entry[] = [...entries];
-    newEntries.push({ id: index, title: text, editing: false });
-    setEntries(newEntries);
-  }
-  function handleEntryDoneClick(id: number) {
-    const entry = entries.find((entry) => entry.id === id);
-    setEntries(entries.filter((toFilter) => toFilter !== entry));
-    const newDoneEntries: Entry[] = [...doneEntries];
-
-    if (entry) newDoneEntries.push(entry);
-    setDoneEntries(newDoneEntries);
-  }
   return (
     <>
       <h1>tasks</h1>
@@ -57,14 +83,13 @@ function App() {
       <button
         onClick={(e) => {
           e.preventDefault();
-          handleAddEntryClick(lastIndex);
-          setLastIndex((number) => number + 1);
+          handleAddTaskClick();
         }}
       >
         Add Task
       </button>
       <ul>
-        {entries.map((entry) => (
+        {state.entries.map((entry: Entry) => (
           <li key={entry.id}>
             {entry.editing ? (
               <>
@@ -74,7 +99,17 @@ function App() {
                 ></input>
                 <button
                   onClick={() => {
-                    handleSaveEditButtonClick(entry.id);
+                    dispatch({
+                      type: ActionKind.EDITED,
+                      payload: {
+                        ...entry,
+                        title: (
+                          document.getElementById(
+                            "text" + entry.id
+                          ) as HTMLInputElement
+                        ).value,
+                      },
+                    });
                   }}
                 >
                   Save
@@ -85,7 +120,10 @@ function App() {
                 {entry.title}
                 <button
                   onClick={() => {
-                    handleEditButtonClick(entry.id);
+                    dispatch({
+                      type: ActionKind.EDITING,
+                      payload: entry,
+                    });
                   }}
                 >
                   {" "}
@@ -95,7 +133,14 @@ function App() {
             )}
             <button
               onClick={() => {
-                handleEntryDoneClick(entry.id);
+                dispatch({
+                  type: ActionKind.REMOVE,
+                  payload: entry,
+                });
+                update({
+                  type: ActionKind.ADD,
+                  payload: entry,
+                });
               }}
             >
               done
@@ -105,14 +150,12 @@ function App() {
       </ul>
       <ul>
         <h1> done </h1>
-        {doneEntries.map((entry) => (
+        {doneState.entries.map((entry) => (
           <li key={entry.id}>{entry.title}</li>
         ))}
       </ul>
     </>
   );
 }
-
-//export function Profile() {}
 
 export default App;
