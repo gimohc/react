@@ -9,6 +9,7 @@ interface Entry {
   id: number;
   title: string;
   editing: boolean;
+  done : boolean;
 }
 interface State {
   entries: Entry[];
@@ -41,9 +42,17 @@ function entryReducer(state: State, action: Action): State {
     case ActionKind.REMOVE:
       return {
         ...state,
-        entries: state.entries.filter(
-          (entry) => entry.id !== action.payload.id
-        ),
+        entries: 
+          
+          state.entries.map((entry : Entry) => {
+            if(entry.id === action.payload.id) 
+              entry.done = true;
+            return {...entry};
+              
+          })
+        
+          
+        
       };
     case ActionKind.EDITED:
       return {
@@ -65,13 +74,12 @@ function entryReducer(state: State, action: Action): State {
 function App() {
   const [lastIndex, setLastIndex] = useState<number>(0);
   const [state, dispatch] = useReducer(entryReducer, { entries: [] });
-  const [doneState, update] = useReducer(entryReducer, { entries: [] });
 
   function handleAddTaskClick() {
     const input = (document.getElementById("text") as HTMLInputElement).value;
     dispatch({
       type: ActionKind.ADD,
-      payload: { id: lastIndex, title: input, editing: false },
+      payload: { id: lastIndex, title: input, editing: false, done: false },
     });
     setLastIndex((n) => n + 1);
   }
@@ -89,7 +97,8 @@ function App() {
         Add Task
       </button>
       <ul>
-        {state.entries.map((entry: Entry) => (
+        {state.entries.map((entry: Entry) => {
+          if(!entry.done) return (
           <li key={entry.id}>
             {entry.editing ? (
               <>
@@ -137,22 +146,20 @@ function App() {
                   type: ActionKind.REMOVE,
                   payload: entry,
                 });
-                update({
-                  type: ActionKind.ADD,
-                  payload: entry,
-                });
               }}
             >
               done
             </button>
           </li>
-        ))}
+        )})}
       </ul>
       <ul>
         <h1> done </h1>
-        {doneState.entries.map((entry) => (
+        {state.entries.map((entry) => {
+          if(entry.done) return (
           <li key={entry.id}>{entry.title}</li>
-        ))}
+        )
+})}
       </ul>
     </>
   );
