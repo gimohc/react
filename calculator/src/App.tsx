@@ -1,5 +1,4 @@
 import React, { useState, useRef, createContext } from 'react'
-import { NumberInput  } from './NumberInput';
 import { NumberButton } from './NumberButton';
 import './App.css'
 
@@ -8,6 +7,8 @@ function App() {
   const [result, setResult] = useState<number>(0);
   const firstInputRef = useRef<HTMLInputElement>(null);
   const secondInputRef = useRef<HTMLInputElement>(null);
+  const [firstInput,setFirstInput] = useState('0');
+  const [secondInput,setSecondInput] = useState('0');
 
   const [selected, setSelected] = useState<React.RefObject<HTMLInputElement>>(firstInputRef);
   const [selectedOperation, setSelectedOperation] = useState<((a:number, b:number) => number) | null>(null);
@@ -20,30 +21,29 @@ function App() {
   function OperationButton({value, operation} : {value:string, operation: (a:number, b:number) => number}) {
     return (
       <button onClick={() => {
-        switchInput();
+        GetResult();
         setSelectedOperation(operation);
       }}> {value} </button>
     )
 
   }
-  function e () {
+  function GetResult () {
     if(firstInputRef.current && secondInputRef.current) {
       const firstValue = Number(firstInputRef.current.value);
       const secondValue = Number(secondInputRef.current.value); 
       if(selectedOperation)
         setResult(selectedOperation(firstValue,secondValue));
+      
       else 
         setResult(firstValue);
       
-      console.log(firstValue);
-      console.log(secondValue);
-      
-    }
-    else console.log("NO")
+    } else 
+      console.error("Input references are not set");
   }
+  
   function EqualsButton() {
 
-    return <button onClick={e}> = </button>
+    return <button onClick={GetResult}> = </button>
   }
 
 
@@ -51,11 +51,13 @@ function App() {
   return (
     <>
       <div>{result}</div>
-      {
-      selected === firstInputRef?   
-      <NumberInput key={0} ref={firstInputRef}/>:
-      <NumberInput key={1} ref={secondInputRef}/>
-      }
+      
+         
+      <button onClick={switchInput}> next input </button>
+      <input key={0} value={firstInput} onChange={(e) => setFirstInput(e.target.value)} className={selected === firstInputRef?undefined:'hidden'} ref={firstInputRef} />
+      <input key={1} value={secondInput} onChange={(e) => setSecondInput(e.target.value)} className={selected === firstInputRef?'hidden':undefined} ref={secondInputRef}/>
+      
+      
       
       <CurrentContext.Provider value = {selected}>
         <div><NumberButton value='1'/><NumberButton value='2'/><NumberButton value='3'/><NumberButton value='4'/></div>

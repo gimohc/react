@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useReducer } from "react";
-//import reactLogo from './assets/react.svg'
-//import viteLogo from '/vite.svg'
-import { Profile } from "./Profile.tsx";
+
 import "./App.css";
 
 interface Entry {
@@ -15,12 +13,12 @@ interface State {
   entries: Entry[];
 }
 
-enum ActionKind {
-  REMOVE = "REMOVE",
-  ADD = "add",
-  EDITING = "editing",
-  EDITED = "edited",
-}
+const ActionKind {
+  REMOVE: "REMOVE";
+  ADD: "add"
+  EDITING: "editing"
+  EDITED: "edited"
+} as const
 interface Action {
   type: ActionKind;
   payload: Entry;
