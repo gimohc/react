@@ -1,23 +1,28 @@
 import { useState, useContext } from "react";
 import { SelectedInputContext } from "./SelectedInputContext.tsx";
+import { ResultContext } from "./ResultContext.tsx";
 
-function getResult(operation: string, a: number, b: number): number {
-  switch (operation) {
-    case "+":
-      return a + b;
-    case "-":
-      return a - b;
-    case "*":
-      return a * b;
-    case "%":
-      return a % b;
-    case "^":
-      return a ** b;
-    case "/":
-      return a / b;
-    default:
-      return 0;
-  }
+function getResult(
+  operation: string | undefined,
+  a: number | undefined,
+  b: number | undefined
+): number {
+  if (operation && a && b)
+    switch (operation) {
+      case "+":
+        return a + b;
+      case "-":
+        return a - b;
+      case "*":
+        return a * b;
+      case "%":
+        return a % b;
+      case "^":
+        return a ** b;
+      case "/":
+        return a / b;
+    }
+  return 0;
 }
 
 export function OperationButton({
@@ -25,14 +30,12 @@ export function OperationButton({
   onClick,
 }: {
   value: string;
-  onClick: () => void;
+  onClick: (value: string) => void;
 }) {
-  const [selectedOperation, setSelectedOperation] = useState<string>("");
   return (
     <button
       onClick={() => {
-        onClick();
-        setSelectedOperation(value);
+        onClick(value);
       }}
     >
       {" "}
@@ -40,28 +43,40 @@ export function OperationButton({
     </button>
   );
 }
-export function EqualsButton(onClick: () => void) {
+export function EqualsButton({ onClick }: { onClick: () => void }) {
   const [result, setResult] = useState<number>(0);
-  const selectedInput = useContext(SelectedInputContext);
+  const results = useContext(ResultContext);
   return (
-    <button
-      onClick={() => {
-        setResult(
-          getResult(selectedOperation, Number(firstInput), Number(secondInput))
-        );
-      }}
-    >
-      =
-    </button>
+    <>
+      <button
+        onClick={() => {
+          if(results?.operation)
+          window.alert(results?.operation + ' ' +
+            results?.firstNumber + ' ' +
+            results?.secondNumber)
+          onClick();
+          setResult(
+            getResult(
+              results?.operation,
+              results?.firstNumber,
+              results?.secondNumber
+            )
+          );
+        }}
+      >
+        =
+      </button>
+      <div> {result} </div>
+    </>
   );
 }
 
 export function NumberButton({ value }: { value: string }) {
+  const selectedInput = useContext(SelectedInputContext);
   return (
     <button
       onClick={() => {
-        if (selectedInput === firstInputRef) setFirstInput((i) => i + value);
-        else setSecondInput((i) => i + value);
+        if (selectedInput?.current) selectedInput.current.value += value;
       }}
     >
       {value}
