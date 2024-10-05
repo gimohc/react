@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import { EqualsButton, NumberButton, OperationButton } from "./Buttons.tsx";
-import { SelectedInputContext } from "./SelectedInputContext.tsx";
 import { ResultContext, OperationContext } from "./ResultContext.tsx";
 import "./App.css";
 
@@ -38,7 +37,6 @@ function App() {
   }
 
   return (
-    <SelectedInputContext.Provider value={selectedInput}>
       <ResultContext.Provider
         value={{
           operation: selectedOperation,
@@ -113,7 +111,6 @@ function App() {
           </OperationContext.Provider>
         </div>
       </ResultContext.Provider>
-    </SelectedInputContext.Provider>
   );
 }
 
