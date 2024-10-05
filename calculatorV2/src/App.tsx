@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import { EqualsButton, NumberButton, OperationButton } from "./Buttons.tsx";
-import { InputElement } from "./InputElement.tsx";
 import { SelectedInputContext } from "./SelectedInputContext.tsx";
 import { ResultContext, OperationContext } from "./ResultContext.tsx";
 import "./App.css";
@@ -17,6 +16,10 @@ export const operations = {
 function App() {
   const firstInputRef = useRef<HTMLInputElement>(null);
   const secondInputRef = useRef<HTMLInputElement>(null);
+
+  const [firstInput, setFirstInput] = useState<string>("");
+  const [secondInput, setSecondInput] = useState<string>("");
+
   const [selectedOperation, setSelectedOperation] = useState<string>("");
   const [selectedInput, setSelectedInput] =
     useState<React.RefObject<HTMLInputElement>>(firstInputRef);
@@ -29,82 +32,87 @@ function App() {
     setSelectedOperation(value);
     switchInput();
   }
+  function addValueToInput(value: string) {
+    if (selectedInput === firstInputRef) setFirstInput((i) => i + value);
+    else setSecondInput((i) => i + value);
+  }
 
   return (
     <SelectedInputContext.Provider value={selectedInput}>
-      <InputElement
-        key="0"
-        ref={firstInputRef}
-        className={selectedInput === firstInputRef ? undefined : "hidden"}
-      />
-      <InputElement
-        key="1"
-        ref={secondInputRef}
-        className={selectedInput === firstInputRef ? "hidden" : undefined}
-      />
+      <ResultContext.Provider
+        value={{
+          operation: selectedOperation,
+          firstNumber: Number(firstInput),
+          secondNumber: Number(secondInput),
+        }}
+      >
+        <input
+          ref={firstInputRef}
+          value={firstInput}
+          className={selectedInput === firstInputRef ? undefined : "hidden"}
+          onChange={(e) => setFirstInput(e.target.value)}
+        />
+        <input
+          ref={secondInputRef}
+          value={secondInput}
+          className={selectedInput === firstInputRef ? "hidden" : undefined}
+          onChange={(e) => setSecondInput(e.target.value)}
+        />
+        <div>
+          <NumberButton value="1" onClick={addValueToInput} />
+          <NumberButton value="2" onClick={addValueToInput} />
+          <NumberButton value="3" onClick={addValueToInput} />
+          <NumberButton value="4" onClick={addValueToInput} />
+        </div>
+        <div>
+          <NumberButton value="5" onClick={addValueToInput} />
+          <NumberButton value="6" onClick={addValueToInput} />
+          <NumberButton value="7" onClick={addValueToInput} />
+          <NumberButton value="8" onClick={addValueToInput} />
+        </div>
 
-      <div>
-        <NumberButton value="1" />
-        <NumberButton value="2" />
-        <NumberButton value="3" />
-        <NumberButton value="4" />
-      </div>
-      <div>
-        <NumberButton value="5" />
-        <NumberButton value="6" />
-        <NumberButton value="7" />
-        <NumberButton value="8" />
-      </div>
+        <div>
+          <NumberButton value="9" onClick={addValueToInput} />
+          <OperationButton
+            value={operations.ADDITION}
+            onClick={handleOperationClick}
+          />
+          <OperationButton
+            value={operations.SUBTRACTION}
+            onClick={handleOperationClick}
+          />
+          <OperationButton
+            value={operations.DIVISION}
+            onClick={handleOperationClick}
+          />
+        </div>
+        <div>
+          <OperationButton
+            value={operations.DIVISION}
+            onClick={handleOperationClick}
+          />
+          <OperationButton
+            value={operations.MOD}
+            onClick={handleOperationClick}
+          />
+          <OperationButton
+            value={operations.POWER}
+            onClick={handleOperationClick}
+          />
 
-      <div>
-        <NumberButton value="9" />
-        <OperationButton
-          value={operations.ADDITION}
-          onClick={handleOperationClick}
-        />
-        <OperationButton
-          value={operations.SUBTRACTION}
-          onClick={handleOperationClick}
-        />
-        <OperationButton
-          value={operations.DIVISION}
-          onClick={handleOperationClick}
-        />
-      </div>
-      <div>
-        <OperationButton
-          value={operations.DIVISION}
-          onClick={handleOperationClick}
-        />
-        <OperationButton
-          value={operations.MOD}
-          onClick={handleOperationClick}
-        />
-        <OperationButton
-          value={operations.POWER}
-          onClick={handleOperationClick}
-        />
-
-        <OperationContext.Provider value={selectedOperation}>
-          <ResultContext.Provider
-            value={{
-              operation: selectedOperation,
-              firstNumber: Number(firstInputRef.current?.value),
-              secondNumber: Number(secondInputRef.current?.value),
-            }}
-          >
+          <OperationContext.Provider value={selectedOperation}>
             <EqualsButton
               onClick={() => {
                 if (firstInputRef.current && secondInputRef.current) {
-                  firstInputRef.current.value = "";
-                  secondInputRef.current.value = "";
+                  setFirstInput("");
+                  setSecondInput("");
                   setSelectedInput(firstInputRef);
                 }
               }}
             />
-          </ResultContext.Provider>
-        </OperationContext.Provider>
-      </div>
+          </OperationContext.Provider>
+        </div>
+      </ResultContext.Provider>
     </SelectedInputContext.Provider>
   );
 }
