@@ -61,36 +61,25 @@ function App() {
       />
       <div>
         {x.map((index) => {
-          if (index % 4 == 0)
-            return (
-              <>
-                <br />
-                <NumberButton
-                  value={String(index)}
-                  onClick={addValueToInput}
-                ></NumberButton>
-              </>
-            );
           return (
-            <NumberButton
-              value={String(index)}
-              onClick={addValueToInput}
-            ></NumberButton>
+            <>
+              {index % 4 == 0 && <br />}
+              <NumberButton
+                value={String(index)}
+                onClick={addValueToInput}
+              ></NumberButton>
+            </>
           );
         })}
         {operationValues.map((operation) => {
-          if (index++ === 2)
-            return (
-              <>
-                <br />
-                <OperationButton
-                  value={operation}
-                  onClick={handleOperationClick}
-                />
-              </>
-            );
           return (
-            <OperationButton value={operation} onClick={handleOperationClick} />
+            <>
+              {index++ === 2 && <br />}
+              <OperationButton
+                value={operation}
+                onClick={handleOperationClick}
+              />
+            </>
           );
         })}
 
