@@ -12,6 +12,7 @@ export interface Action {
   type: string;
   payload: Entry;
 }
+
 export function reducerFunction(state: State, action: Action): State {
   switch (action.type) {
     case ActionKind.ADD:
